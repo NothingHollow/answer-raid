@@ -5,7 +5,7 @@
 #
 # 部署前会跑 `pnpm test:ci` 加 `pnpm test:dom`(全套离线断言),题库或引擎坏掉时
 # 直接拦住,不让坏版本上线(现场二维码扫出来必须是能用的版本)。
-name: Deploy to GitHub Pages
+name: Checks and optional Pages preview
 
 on:
   push:
@@ -57,11 +57,14 @@ jobs:
 
       # 关掉 Jekyll:否则下划线开头的文件/目录会被吞掉,而且多一次无用处理
       - name: Disable Jekyll
+        if: github.event_name == 'workflow_dispatch'
         run: touch dist/.nojekyll
 
       - uses: actions/configure-pages@v5
+        if: github.event_name == 'workflow_dispatch'
 
       - uses: actions/upload-pages-artifact@v3
+        if: github.event_name == 'workflow_dispatch'
         with:
           path: dist
 
