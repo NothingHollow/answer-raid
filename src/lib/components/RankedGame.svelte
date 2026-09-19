@@ -88,7 +88,7 @@
   {#if !run}
     <section class="panel setup">
       <h2>{label('留下你的名字', 'Put your name on the board')}</h2>
-      <p>{label('排位赛成绩会公开显示在共享排行榜上。练习成绩不参与排名。', 'Ranked results appear publicly on the shared leaderboard. Practice scores do not count.')}</p>
+      <p>{label('完成的排位赛成绩会公开显示在共享排行榜上。', 'Completed ranked results appear publicly on the shared leaderboard.')}</p>
       <p>{label('每档答对 6 题晋级，3 个锦囊。倒计时无法暂停，切换页面也会继续。', 'Answer 6 correctly per tier, with 3 jokers per run. The timer keeps running if you leave this page.')}</p>
       <form onsubmit={(e) => { e.preventDefault(); start(); }}>
         <label for="ranked-name">{label('名字 / 昵称', 'Name / nickname')}</label>

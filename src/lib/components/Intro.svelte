@@ -1,26 +1,11 @@
 <script lang="ts">
-  /** 标题页:输入代号 → 选择开始。展示三档难度与个人最佳战绩。 */
+  /** 标题页：排位赛入口、共享排行榜与三档难度规则。 */
   import { fade, fly } from 'svelte/transition';
   import { TIERS } from '../data/tiers';
   import { ALL_QUESTIONS_SOURCE } from '../data/questions';
   import { ROUNDS_PER_TIER } from '../data/types';
-  import { game, startRun, JOKERS_PER_RUN, initAudio, jokers } from '../quiz.svelte';
+  import { JOKERS_PER_RUN, jokers } from '../quiz.svelte';
   import { msg, t, fmt } from '../i18n.svelte.ts';
-  import { loadBest, loadHistory, loadHandle } from '../storage';
-
-  const best = loadBest();
-  const history = $derived(loadHistory().slice(0, 5));
-
-  let handle = $state(loadHandle());
-  let touched = $state(false);
-
-  const ready = $derived(handle.trim().length > 0);
-
-  function go(): void {
-    initAudio();
-    startRun(handle);
-  }
-
   const p2 = (n: number) => String(n).padStart(2, '0');
 
   const LOGO = ` ██████╗███████╗ █████╗     ██████╗  █████╗ ██╗██████╗
@@ -85,36 +70,6 @@
     </div>
 
     <div class="rightCol">
-      <div class="panel card" in:fly={{ y: 22, duration: 420, delay: 140 }}>
-        <h2 class="ph">{t(msg('intro.handle'))}</h2>
-        <label class="field" class:bad={touched && !ready}>
-          <span class="pfx">root@csa:~$</span>
-          <input
-            bind:value={handle}
-            oninput={() => (touched = true)}
-            onkeydown={(e) => {
-              if (e.key === 'Enter' && ready) go();
-            }}
-            maxlength="14"
-            placeholder={t(msg('intro.handlePh'))}
-            spellcheck="false"
-            autocomplete="off"
-          />
-          <span class="caret">█</span>
-        </label>
-        <div class="row">
-          <button class="btn primary start" onclick={go} disabled={!ready}>
-            {t(msg('intro.start'))}
-          </button>
-        </div>
-        <p class="rule mute">{t(msg('intro.practiceNote'))}</p>
-        {#if !ready}
-          <p class="warn mute">{t(msg('intro.emptyHandle'))}</p>
-        {:else}
-          <p class="go mute">{t(msg('intro.enterHint'))}</p>
-        {/if}
-      </div>
-
       <div class="panel card" in:fly={{ y: 22, duration: 420, delay: 210 }}>
         <h2 class="ph">{t(msg('intro.jokers'))}</h2>
         <ul class="jokers">
@@ -127,37 +82,6 @@
         </p>
       </div>
 
-      <div class="panel card record" in:fly={{ y: 22, duration: 420, delay: 280 }}>
-        <h2 class="ph">{t(msg('intro.archive'))}</h2>
-        {#if best}
-          <div class="best">
-            <div class="bestScore">
-              <span class="mute">{t(msg('intro.best'))}</span>
-              <b>{best.score.toLocaleString()}</b>
-            </div>
-            <div class="bestMeta">
-              <span>{best.handle}</span>
-              <span class="dim">{fmt('intro.tierOf', { tier: best.tier.toUpperCase() })}</span>
-              <span class="dim">{fmt('intro.combo', { n: best.combo })}</span>
-              <span class="dim">{t(msg(best.cleared ? 'intro.cleared' : 'intro.notCleared'))}</span>
-            </div>
-          </div>
-          {#if history.length > 1}
-            <ul class="hist">
-              {#each history.slice(1) as h (h.at)}
-                <li>
-                  <span class="dim">{p2(new Date(h.at).getMonth() + 1)}/{p2(new Date(h.at).getDate())}</span>
-                  <span>{h.handle}</span>
-                  <span class="dim">{h.tier.toUpperCase()}</span>
-                  <b>{h.score.toLocaleString()}</b>
-                </li>
-              {/each}
-            </ul>
-          {/if}
-        {:else}
-          <p class="mute">{t(msg('intro.noRecord'))}</p>
-        {/if}
-      </div>
     </div>
   </section>
 
@@ -341,60 +265,6 @@
     gap: clamp(0.9rem, 2vw, 1.1rem);
   }
 
-  .field {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.55rem 0.7rem;
-    border: 1px solid var(--line-hard);
-    background: var(--code-bg);
-    font-size: 0.95rem;
-  }
-  .field.bad {
-    border-color: var(--danger);
-    animation: shake 0.4s ease-out;
-  }
-  .pfx {
-    color: var(--accent);
-    font-size: 0.85em;
-    white-space: nowrap;
-  }
-  .field input {
-    flex: 1;
-    min-width: 0;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: var(--fg-strong);
-    font-family: var(--mono);
-    font-size: 1rem;
-    letter-spacing: 0.06em;
-  }
-  .field input::placeholder {
-    color: var(--fg-mute);
-  }
-  .caret {
-    color: var(--accent);
-    animation: blink 1s steps(1) infinite;
-  }
-
-  .row {
-    display: flex;
-    gap: 0.6rem;
-    margin-top: 0.9rem;
-  }
-  .start {
-    flex: 1;
-  }
-  .warn {
-    margin: 0.7rem 0 0;
-    font-size: 0.76rem;
-  }
-  .go {
-    margin: 0.7rem 0 0;
-    font-size: 0.76rem;
-  }
-
   .jokers {
     list-style: none;
     margin: 0;
@@ -425,60 +295,6 @@
     margin: 0.85rem 0 0;
     font-size: 0.76rem;
     line-height: 1.7;
-  }
-
-  .best {
-    display: flex;
-    gap: 1rem;
-    align-items: flex-end;
-    justify-content: space-between;
-    padding-bottom: 0.7rem;
-    border-bottom: 1px dashed var(--line);
-  }
-  .bestScore {
-    display: flex;
-    flex-direction: column;
-  }
-  .bestScore span {
-    font-size: 0.72rem;
-    letter-spacing: 0.16em;
-  }
-  .bestScore b {
-    font-family: var(--display);
-    font-size: 2.1rem;
-    line-height: 1.1;
-    color: var(--accent);
-    text-shadow: 0 0 20px var(--accent-glow);
-  }
-  .bestMeta {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    font-size: 0.76rem;
-    gap: 0.1rem;
-  }
-  .bestMeta > span:first-child {
-    color: var(--fg-strong);
-  }
-
-  .hist {
-    list-style: none;
-    margin: 0.7rem 0 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.28rem;
-    font-size: 0.78rem;
-  }
-  .hist li {
-    display: grid;
-    grid-template-columns: auto 1fr auto auto;
-    gap: 0.6rem;
-    align-items: center;
-  }
-  .hist b {
-    color: var(--accent);
-    font-variant-numeric: tabular-nums;
   }
 
   .foot {

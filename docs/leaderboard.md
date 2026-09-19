@@ -1,13 +1,13 @@
 # Shared leaderboard / 共享排行榜
 
-The leaderboard is backed by Neon Postgres. The existing practice game remains available without a database. Ranked games use a same-origin server API and never accept a score supplied by the browser.
+The leaderboard is backed by Neon Postgres. Ranked is the only playable mode and requires the API. Ranked games use a same-origin server API and never accept a score supplied by the browser.
 
 ## Pages
 
 - `/#/ranked`: start a ranked game with a public nickname. The rules are 6 correct answers per tier, 3 jokers total, EZ / HD / IN. Answer, timing, combo, hint penalties, lives and completion are calculated on the server.
 - `/#/leaderboard`: top 50, all-time or today's results, automatic refresh every 10 seconds while visible, and a fullscreen button for an event display. Today uses Asia/Shanghai (UTC+8).
 - Both pages follow the existing Chinese/English and light/dark controls.
-- Practice results stay in localStorage. Historical local scores are deliberately not uploaded because they cannot be verified.
+- Historical local scores are not uploaded because they cannot be verified. The practice entry and local archive are no longer shown.
 
 Ranked questions continue timing while a page is closed or an exit confirmation is visible. Feedback waits for the player to continue. A run expires after two hours. Refreshing the same tab resumes it using sessionStorage and an HttpOnly owner cookie. Quitting does not publish the run.
 
@@ -28,7 +28,7 @@ One best result is shown per browser identity and case-insensitive nickname. Thi
 
 Import `NothingHollow/answer-raid`, use the Vite preset, and keep the root directory at the repository root. Set `DATABASE_URL` as a server environment variable in Production and Preview. Run the migration once against that database before deployment. `api/raid.ts` exposes the same handler used by Vite development. `vercel.json` puts functions near the supplied US East database.
 
-The site and API must share an origin. Do not put database credentials or a browser-facing database proxy into GitHub Pages. The Pages workflow remains manually runnable for practice-only static builds; pushes run its checks, and Vercel hosts the full game.
+The site and API must share an origin. Do not put database credentials or a browser-facing database proxy into GitHub Pages. The Pages workflow remains manually runnable for static layout previews (ranked play requires the API); pushes run its checks, and Vercel hosts the full game.
 
 ## Integrity and operational limits
 
