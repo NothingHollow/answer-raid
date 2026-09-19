@@ -263,6 +263,7 @@ window.AudioContext = class {
 globalThis.window = window;
 globalThis.document = document;
 globalThis.localStorage = window.localStorage;
+globalThis.sessionStorage = window.sessionStorage;
 globalThis.getComputedStyle = window.getComputedStyle.bind(window);
 globalThis.requestAnimationFrame = function raf(cb) {
   return setTimeout(() => cb(performance.now()), 16);
@@ -272,6 +273,7 @@ globalThis.cancelAnimationFrame = (id) => clearTimeout(id);
 // bundle 里会直接引用这些 DOM 全局构造器,必须逐个桥接
 for (const name of [
   'HTMLElement',
+  'HTMLInputElement',
   'HTMLMediaElement',
   'HTMLCanvasElement',
   'SVGElement',
@@ -370,7 +372,7 @@ ok('档位文案含 EZ/HD/IN', ['轻松', '进阶', '深入'].every((t) => text(
 ok('有代号输入框', has('.field input'));
 ok('三个锦囊都列出来了', $$('.jokers li').length === 3, `实际 ${$$('.jokers li').length}`);
 
-const startBtn = $$('button').find((b) => b.textContent.includes('开始突袭'));
+const startBtn = $('.start');
 ok('未输入代号时开始按钮禁用', startBtn.disabled === true);
 typeInto('.field input', '测试员');
 await sleep(30);
@@ -711,6 +713,63 @@ section('15. 中途退出(ESC / 按钮 + 确认弹窗)');
     localStorage.getItem('csa.raid.best.v1') === bestBefore,
     String(localStorage.getItem('csa.raid.best.v1')),
   );
+}
+
+section('16. Shared leaderboard and ranked flow');
+{
+  const realFetch = globalThis.fetch;
+  let failRead = false;
+  let saved = false;
+  const mockRun = {
+    id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', version: 0, handle: '测试', phase: 'question',
+    tier: 'EZ', progress: 0, lives: 2, score: 0, correct: 0, answered: 0, combo: 0, bestCombo: 0,
+    cleared: false, jokers: 3, hint: false, eliminated: [], deadline: Date.now() + 40000,
+    serverNow: Date.now(), feedback: null,
+    question: { id: 'qa', tags: [], zh: { prompt: '测试问题', options: ['甲', '乙', '丙', '丁'] }, en: { prompt: 'Test question', options: ['One', 'Two', 'Three', 'Four'] } },
+  };
+  globalThis.fetch = async (url, options) => {
+    if (!options?.body) {
+      if (failRead) return Response.json({ error: 'unavailable' }, { status: 503 });
+      return Response.json({ entries: String(url).includes('today') ? [] : [
+        { rank: 1, handle: '同名', player: 'a1b2c3', score: 1000, tier: 'HD', correct: 6, answered: 7, combo: 6, cleared: false, at: new Date().toISOString() },
+        { rank: 2, handle: '同名', player: 'd4e5f6', score: 500, tier: 'EZ', correct: 3, answered: 5, combo: 3, cleared: false, at: new Date().toISOString() },
+      ], updatedAt: new Date().toISOString() });
+    }
+    const body = JSON.parse(options.body);
+    if (body.action === 'answer') {
+      saved = true;
+      return Response.json({ ...mockRun, phase: 'over', version: 1, score: 149, answered: 1, correct: 1, bestCombo: 1, feedback: { correct: true, answer: 0, picked: 0, gain: 149, timeout: false } });
+    }
+    return Response.json(mockRun);
+  };
+  async function route(hash) {
+    window.location.hash = hash;
+    window.dispatchEvent(new window.Event('hashchange'));
+    await sleep(150);
+  }
+  await route('#/leaderboard');
+  ok('Leaderboard route renders without starting a game', has('.leaderboard') && !has('.qcard'));
+  ok('Ranks display shared scores and distinguish identical names', text('tbody').includes('a1b2c3') && text('tbody').includes('d4e5f6') && $$('.leaderboard tbody .score')[0]?.textContent === (1000).toLocaleString(), text('tbody'));
+  failRead = true;
+  clickByText('.tools button', '刷新'); await sleep(150);
+  ok('A failed refresh preserves the last scores and shows an error', text('.status').includes('无法更新') && $$('.leaderboard tbody tr').length === 2);
+  failRead = false;
+  clickByText('.filters button', '今日'); await sleep(150);
+  ok('Today filter shows an empty state without stale all-time scores', has('.empty') && !has('.table-wrap'));
+  await route('#/ranked');
+  typeInto('#ranked-name', '测试');
+  $('.setup form')?.dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+  await sleep(150);
+  ok('Ranked game displays the API question', text('.ranked .question').includes('测试问题'));
+  ok('Ranked options do not reveal the correct answer before submission', !has('.ranked .right'));
+  $('.ranked .options button')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await sleep(150);
+  ok('Ranked result confirms saving only after server response', saved && text('.done').includes('已保存') && text('.ranked .hud').includes('149'));
+  $('.mini.lang')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await sleep(100);
+  ok('Ranked results and questions switch to English', text('.done').includes('saved') && text('.ranked .question').includes('Test question'));
+  await route('#/');
+  globalThis.fetch = realFetch;
 }
 
 /* ---------- 收尾 ---------- */

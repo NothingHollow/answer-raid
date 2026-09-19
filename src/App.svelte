@@ -11,6 +11,8 @@
   import JokerBar from './lib/components/JokerBar.svelte';
   import Promote from './lib/components/Promote.svelte';
   import Result from './lib/components/Result.svelte';
+  import Leaderboard from './lib/components/Leaderboard.svelte';
+  import RankedGame from './lib/components/RankedGame.svelte';
   import QuitDialog from './lib/components/QuitDialog.svelte';
   import RainBackground from './lib/components/RainBackground.svelte';
   import CrtOverlay from './lib/components/CrtOverlay.svelte';
@@ -19,6 +21,9 @@
   import { theme, toggleTheme, THEME_ICON } from './lib/theme.svelte.ts';
   import { sfx } from './lib/audio';
   import { onMount } from 'svelte';
+
+  const currentPage = () => typeof window === 'undefined' ? '' : window.location.hash.split('?')[0];
+  let page = $state(currentPage());
 
   const inRun = $derived(
     game.phase === 'playing' ||
@@ -30,6 +35,7 @@
 
   /** 全局键盘路由:ESC 退出确认 · A/B/C/D 选项 · 1/2/3 锦囊。输入框内不拦截。 */
   function onKey(e: KeyboardEvent): void {
+    if (page === '#/leaderboard' || page === '#/ranked') return;
     const t = e.target as HTMLElement | null;
     if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
     if (e.metaKey || e.ctrlKey || e.altKey) return;
@@ -71,10 +77,14 @@
 
 <RainBackground enabled={theme() === 'dark'} />
 <CrtOverlay enabled={theme() === 'dark'} intense={game.phase === 'promote'} />
-<svelte:window onkeydown={onKey} />
+<svelte:window onkeydown={onKey} onhashchange={() => { page = currentPage(); }} />
 
 <div class="app" class:glitch={game.phase === 'feedback' && game.isCorrect === false}>
-  {#if game.phase === 'boot'}
+  {#if page === '#/leaderboard'}
+    <Leaderboard />
+  {:else if page === '#/ranked'}
+    <RankedGame />
+  {:else if game.phase === 'boot'}
     <BootScreen />
   {:else if game.phase === 'intro'}
     <Intro />
@@ -109,7 +119,7 @@
 
 <QuitDialog />
 
-{#if game.phase !== 'boot'}
+{#if game.phase !== 'boot' || page === '#/leaderboard' || page === '#/ranked'}
   <div class="corner">
     <button
       class="mini lang"

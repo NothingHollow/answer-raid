@@ -124,6 +124,8 @@
         <button class="btn primary" onclick={() => { sfx('select'); retry(); }}>{t(msg('res.retry'))}</button>
         <button class="btn" onclick={() => { sfx('blip'); toIntro(); }}>{t(msg('res.home'))}</button>
         <button class="btn" onclick={share}>{t(msg(copied ? 'res.copied' : 'res.share'))}</button>
+        <a class="btn" href="#/leaderboard">{t(msg('nav.leaderboard'))}</a>
+        <a class="btn" href="#/ranked">{t(msg('nav.ranked'))}</a>
       </div>
 
       <h3 class="ph">{t(msg('res.join'))}</h3>

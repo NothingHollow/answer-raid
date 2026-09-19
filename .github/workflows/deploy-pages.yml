@@ -1,7 +1,7 @@
 # 把 dist/ 发布到 GitHub Pages(https://joxos.github.io/answer-raid/)。
 #
-# 本项目是纯静态无后端产物,`vite.config.ts` 里 `base: './'` 已用相对路径,
-# 因此 project site 的子路径托管不需要任何额外配置。
+# Vercel hosts the full game and Neon API. GitHub Pages is a manually triggered
+# practice-only build; static hosting cannot run ranked games or the leaderboard API.
 #
 # 部署前会跑 `pnpm test:ci` 加 `pnpm test:dom`(全套离线断言),题库或引擎坏掉时
 # 直接拦住,不让坏版本上线(现场二维码扫出来必须是能用的版本)。
@@ -66,6 +66,7 @@ jobs:
           path: dist
 
   deploy:
+    if: github.event_name == 'workflow_dispatch'
     needs: build
     runs-on: ubuntu-latest
     environment:

@@ -138,6 +138,9 @@ const nb = (v: unknown): string => Number(v).toLocaleString();
 
 const DICT: Record<Lang, Record<string, Message>> = {
   zh: {
+    'nav.ranked': '排位赛',
+    'nav.leaderboard': '排行榜',
+    'intro.practiceNote': '此处为本地练习，成绩不参与共享排名。',
     'q.hintPenalty': Msg((p) => `情报 ×${p.n}`),
     'q.diagram': '题目示意图',
     'org.chip': '计算机协会 · 百团大战',
@@ -150,7 +153,7 @@ const DICT: Record<Lang, Record<string, Message>> = {
     'intro.randomNote': '每局随机抽题，同一题不会重复出现，选项顺序也会打乱。',
     'intro.handle': '// 特工代号',
     'intro.handlePh': '你的名字 / 昵称',
-    'intro.start': '▶ 开始突袭',
+    'intro.start': '▶ 开始练习',
     'intro.emptyHandle': '输入名字或昵称即可开始。',
     'intro.enterHint': '按 ENTER 直接开打',
     'intro.jokers': '// 装备 · 三个锦囊',
@@ -339,6 +342,9 @@ const DICT: Record<Lang, Record<string, Message>> = {
   },
 
   en: {
+    'nav.ranked': 'Play ranked',
+    'nav.leaderboard': 'Leaderboard',
+    'intro.practiceNote': 'Local practice. Scores do not count toward the shared leaderboard.',
     'q.hintPenalty': Msg((p) => `Hint ×${p.n}`),
     'q.diagram': 'Question diagram',
     'org.chip': 'Computer Association · Club Fair',
@@ -351,7 +357,7 @@ const DICT: Record<Lang, Record<string, Message>> = {
     'intro.randomNote': 'Questions are drawn at random without repeats during a run. Answer options are shuffled.',
     'intro.handle': '// AGENT CALLSIGN',
     'intro.handlePh': 'your name / nickname',
-    'intro.start': '▶ START RAID',
+    'intro.start': '▶ PRACTICE',
     'intro.emptyHandle': 'Enter a name or nickname to begin.',
     'intro.enterHint': 'Press ENTER to jump straight in',
     'intro.jokers': '// GEAR · THREE JOKERS',

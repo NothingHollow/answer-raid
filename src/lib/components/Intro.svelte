@@ -51,6 +51,10 @@
     <p class="sub">
       {fmt('intro.tagline', { tiers: TIERS.length, rounds: ROUNDS_PER_TIER, tier: TIERS[TIERS.length - 1].name })}
     </p>
+    <div class="ranked-links">
+      <a class="btn primary" href="#/ranked">{t(msg('nav.ranked'))}</a>
+      <a class="btn" href="#/leaderboard">{t(msg('nav.leaderboard'))}</a>
+    </div>
   </header>
 
   <section class="grid">
@@ -103,6 +107,7 @@
             {t(msg('intro.start'))}
           </button>
         </div>
+        <p class="rule mute">{t(msg('intro.practiceNote'))}</p>
         {#if !ready}
           <p class="warn mute">{t(msg('intro.emptyHandle'))}</p>
         {:else}
@@ -162,6 +167,7 @@
 </div>
 
 <style>
+  .ranked-links { display:flex; justify-content:center; gap:.75rem; flex-wrap:wrap; margin:1.4rem 0 .3rem; }
   .intro {
     position: relative;
     z-index: 3;
