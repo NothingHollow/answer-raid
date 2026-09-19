@@ -1,0 +1,3 @@
+# Required by tsx's pinned esbuild dependency. Keep other install scripts blocked.
+allowBuilds:
+  esbuild@0.28.2: true
